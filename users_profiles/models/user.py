@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.base_user import BaseUserManager
 from django.core.validators import FileExtensionValidator
-from types.models import DocumentType 
+from app_types.models.document_type import DocumentType 
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):

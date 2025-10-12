@@ -13,11 +13,11 @@ router = DefaultRouter()
 # User URLs
 urlpatterns = [
     # User management
-    path('users/me/', UserDetailView.as_view(), name='user-detail'),
-    path('users/me/update/', UserUpdateView.as_view(), name='user-update'),
-    path('users/me/photo/', UserProfilePhotoView.as_view(), name='user-photo'),
-    path('users/search/', UserSearchView.as_view(), name='user-search'),
-    path('users/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('user/me/', UserDetailView.as_view(), name='user-detail'),
+    path('user/me/update/', UserUpdateView.as_view(), name='user-update'),
+    path('user/me/photo/', UserProfilePhotoView.as_view(), name='user-photo'),
+    path('user/search/', UserSearchView.as_view(), name='user-search'),
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
     
     # Profile management
     path('profiles/me/', ProfileDetailView.as_view(), name='profile-detail'),

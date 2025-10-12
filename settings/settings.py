@@ -4,7 +4,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-fd#(-5p4&w59s#!ws(&w&as)y3ea&q#zmlm4k8(!v&bsv@!3!h'
+SECRET_KEY = 'kctf2z=w+ec!=$wzh8j^0q#@!%5im(q@z_s9^$a*r222r1^r7*'
 
 DEBUG = True
 
@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'architect.apps.ArchitectConfig',
-    'types',
+    'app_types',
     'ubi_geo.apps.UbiGeoConfig',
     'users_profiles',
 ]
