@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'architect.apps.ArchitectConfig',
+    'employees',
     'app_types',
     'ubi_geo.apps.UbiGeoConfig',
     'users_profiles',
