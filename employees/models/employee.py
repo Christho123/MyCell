@@ -111,6 +111,13 @@ class Employees(models.Model):
         verbose_name="Dirección"
         )
 
+    photo = models.ImageField(
+        upload_to='employee_photos/',
+        blank=True,
+        null=True,
+        verbose_name="Foto"
+    )
+
     # Campos de auditoría
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
@@ -126,6 +133,12 @@ class Employees(models.Model):
 
     def get_full_name(self):
         return f"{self.name} {self.last_name_paternal} {self.last_name_maternal}"
+
+    def get_photo_url(self):
+        """Retorna la URL de la foto si existe, None si no hay foto"""
+        if self.photo and hasattr(self.photo, 'url'):
+            return self.photo.url
+        return None
 
     def __str__(self):
         return self.get_full_name()

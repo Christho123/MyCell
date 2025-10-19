@@ -6235,3 +6235,26 @@ Todas las APIs siguen el patrón: `/api/[modulo]/[recurso]/`
 ```
 
 ---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+json para empleados
+{
+    "name": "Christhoper Smith",
+    "last_name_paternal": "Sosa",
+    "last_name_maternal": "Morales",
+    "document_type": 6,
+    "document_number": "70129706",
+    "email": "cristofesosaaaaa159@gmail.com",
+    "gender": "M",
+    "phone": "902887587",
+    "birth_date": "2003-09-23",
+    "region": 1,
+    "province": 1,
+    "district": 1,
+    "rol": 1,
+    "salary": "120412124",
+    "address": "Aeqwrtq"
+}

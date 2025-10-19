@@ -7,6 +7,7 @@ from app_types.models import DocumentType
 class EmployeeSerializer(serializers.ModelSerializer):
     
     full_name = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Employees
@@ -15,7 +16,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'name', 'last_name_paternal', 'last_name_maternal', 'document_number',
             'email', 'gender', 'phone', 'birth_date', 'region', 'region_id', 'province',
             'province_id', 'district', 'district_id', 'salary', 'address', 'full_name', 
-            'created_at', 'updated_at', 'deleted_at'
+            'photo_url', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
         
@@ -126,3 +127,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             full_name_parts.append(obj.last_name_maternal)
             
         return ' '.join(full_name_parts) if full_name_parts else ''
+
+    def get_photo_url(self, obj):
+        """Retorna la URL de la foto del empleado"""
+        return obj.get_photo_url()
