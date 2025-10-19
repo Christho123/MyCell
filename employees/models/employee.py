@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 from app_types.models.document_type import DocumentType
 from ubi_geo.models import Region, Province, District
 from architect.models.permission import Role
@@ -68,42 +69,41 @@ class Employees(models.Model):
 
     region = models.ForeignKey(
         Region, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True,
         verbose_name="Región"
         )
 
     province = models.ForeignKey(
         Province, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True,
         verbose_name="Provincia")
 
     district = models.ForeignKey(
         District, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True,
         verbose_name="Distrito"
         )
         
     rol = models.ForeignKey(
         Role, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True, 
         verbose_name="Rol"
         )
 
-    salary = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        blank=True, 
-        null=True, 
-        verbose_name="Salario"
-        )
-    
-    photo = models.ImageField(
-        upload_to='photo_employees/',
-        max_length=255,
+    salary = models.CharField(
+        max_length=150,
         blank=True,
         null=True,
-        verbose_name="Foto de perfil"
-    )
+        verbose_name="Salario"
+        )
 
     address = models.TextField(
         blank=True, 
@@ -114,7 +114,6 @@ class Employees(models.Model):
     # Campos de auditoría
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
-    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Eliminacion")
 
     def __str__(self):
         return f"{self.name or ''} {self.last_name_paternal or ''} - {self.document_number or ''}"
@@ -126,12 +125,7 @@ class Employees(models.Model):
         ordering = ['name', 'last_name_paternal', 'last_name_maternal']
 
     def get_full_name(self):
-        return f"{self.name} {self.last_name_paternal} {self.last_name_maternal or ''}"
+        return f"{self.name} {self.last_name_paternal} {self.last_name_maternal}"
 
     def __str__(self):
         return self.get_full_name()
-
-    def get_photo_url(self):
-        if self.photo:
-            return f"{settings.MEDIA_URL}{self.photo}"
-        return None

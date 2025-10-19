@@ -1,1 +1,1 @@
-from .employees import EmployeeSerializer
+from .employee import EmployeeSerializer
