@@ -38,6 +38,7 @@ class Employees(models.Model):
         max_length=15, 
         null=True, 
         blank=True,
+        unique=True,
         verbose_name="Número de documento"
     )
 
