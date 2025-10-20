@@ -22,7 +22,7 @@ class DocumentType(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Eliminacion")
 
     def __str__(self):
-        return self.name
+        return self.name or "Sin nombre"
 
     class Meta:
         db_table = "document_types"

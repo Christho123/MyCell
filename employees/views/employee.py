@@ -5,8 +5,53 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from ..models.employee import Employees
+from ..serializers.employee import EmployeeSerializer
 from datetime import datetime
+from rest_framework import viewsets, filters, status
+from rest_framework.response import Response
 
+class EmployeeViewSet(viewsets.ModelViewSet):
+
+    serializer_class = EmployeeSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = [
+        "name",
+        "last_name_paternal",
+        "last_name_maternal",
+        "document_number",
+        "document_type",
+        "email",
+        "phone",
+        "address",
+        # búsqueda por nombres de ubicaciones (FK)
+        "region__name",
+        "province__name",
+        "district__name",
+    ]
+
+    def get_queryset(self):
+        """
+        - Usa select_related para evitar N+1 en las FKs de ubicación.
+        - Filtra por activo/inactivo (param 'active').
+        - Filtra opcionalmente por IDs de region/province/district.
+        """
+        qs = (
+            Employees.objects.select_related("region", "province", "district")
+            .all()
+        )
+
+        # filtros por ubicación (IDs)
+        region = self.request.query_params.get("region")
+        province = self.request.query_params.get("province")
+        district = self.request.query_params.get("district")
+        if region:
+            qs = qs.filter(region_id=region)
+        if province:
+            qs = qs.filter(province_id=province)
+        if district:
+            qs = qs.filter(district_id=district)
+
+        return qs
 
 @csrf_exempt
 def employee_list(request):
@@ -95,48 +140,19 @@ def employee_create(request):
             'address': payload.get('address'),
         }
 
-        filtered_data = {k: v for k, v in employee_data.items() if v is not None}
-        e = Employees.objects.create(**filtered_data)
+        # Usar el serializer para validar y crear
+        serializer = EmployeeSerializer(data=employee_data)
         
+        if serializer.is_valid():
+            employee = serializer.save()
+        else:
+            # Devolver errores de validación
+            return JsonResponse({"errors": serializer.errors}, status=400)
+        
+        # Respuesta usando el serializer para obtener el formato correcto
         response_data = {
             "message": "Empleado creado exitosamente",
-            "employee": {
-                "id": e.id,
-                "name": e.name,
-                "last_name_paternal": e.last_name_paternal,
-                "last_name_maternal": e.last_name_maternal,
-                "full_name": e.get_full_name(),
-                "document_type": (
-                    {"id": e.document_type.id, "name": e.document_type.name}
-                    if e.document_type else None
-                ),
-                "document_number": e.document_number,
-                "email": e.email,
-                "gender": e.gender,
-                "phone": e.phone,
-                "birth_date": e.birth_date.isoformat() if e.birth_date else None,
-                "region": (
-                    {"id": e.region.id, "name": e.region.name}
-                    if e.region else None
-                ),
-                "province": (
-                    {"id": e.province.id, "name": e.province.name}
-                    if e.province else None
-                ),
-                "district": (
-                    {"id": e.district.id, "name": e.district.name}
-                    if e.district else None
-                ),
-                "rol": (
-                    {"id": e.rol.id, "name": e.rol.name}
-                    if e.rol else None
-                ),
-                "salary": e.salary,
-                "address": e.address,
-                "photo_url": e.get_photo_url(),
-                "created_at": e.created_at.isoformat() if e.created_at else None,
-                "updated_at": e.updated_at.isoformat() if e.updated_at else None
-            }
+            "employee": serializer.data
         }
         
         return JsonResponse(response_data, status=201)
@@ -180,11 +196,11 @@ def employee_update(request, pk):
         'address': 'address',
     }
 
-    # Aplicar cambios solo a los campos presentes
+    # Preparar datos para el serializer
+    update_data = {}
     for field_name, model_field in allowed_fields.items():
         if field_name in payload:
             value = payload[field_name]
-
             # Si el campo es fecha, convertirla correctamente
             if field_name == "birth_date" and value:
                 from datetime import date
@@ -192,52 +208,20 @@ def employee_update(request, pk):
                     value = date.fromisoformat(value)
                 except ValueError:
                     return JsonResponse({"error": "Formato de fecha inválido. Usa YYYY-MM-DD."}, status=400)
-
-            setattr(employee, model_field, value)
+            update_data[model_field] = value
     
-    # Guardar cambios sin exigir campos obligatorios en payload
-    employee.save(update_fields=list(allowed_fields.values()))
+    # Usar el serializer para validar y actualizar
+    serializer = EmployeeSerializer(employee, data=update_data, partial=True)
     
-    # Respuesta con datos actualizados
-    updated_data = {
-        "id": employee.id,
-        "name": employee.name,
-        "last_name_paternal": employee.last_name_paternal,
-        "last_name_maternal": employee.last_name_maternal,
-        "document_type": (
-            {"id": employee.document_type.id, "name": employee.document_type.name}
-            if employee.document_type else None
-        ),
-        "document_number": employee.document_number,
-        "email": employee.email,
-        "gender": employee.gender,
-        "phone": employee.phone,
-        "birth_date": employee.birth_date.isoformat() if employee.birth_date else None,
-        "region": (
-            {"id": employee.region.id, "name": employee.region.name}
-            if employee.region else None
-        ),
-        "province": (
-            {"id": employee.province.id, "name": employee.province.name}
-            if employee.province else None
-        ),
-        "district": (
-            {"id": employee.district.id, "name": employee.district.name}
-            if employee.district else None
-        ),
-        "rol": (
-            {"id": employee.rol.id, "name": employee.rol.name}
-            if employee.rol else None
-        ),
-        "salary": employee.salary,
-        "address": employee.address,
-        "photo_url": employee.get_photo_url(),
-        "updated_at": employee.updated_at.isoformat() if employee.updated_at else None
-    }
+    if serializer.is_valid():
+        updated_employee = serializer.save()
+    else:
+        return JsonResponse({"errors": serializer.errors}, status=400)
     
+    # Respuesta usando el serializer para obtener el formato correcto
     return JsonResponse({
-        "message": "Empleado actualizado parcialmente con éxito",
-        "employee": updated_data
+        "message": "Empleado actualizado exitosamente",
+        "employee": serializer.data
     }, status=200)
 
 

@@ -15,3 +15,4 @@ def update(instance: Employees, **kwargs):
 def soft_delete(instance: Employees):
     instance.soft_delete()
     return instance
+

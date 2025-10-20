@@ -3,11 +3,56 @@ from ..models import Employees
 import re
 from datetime import date
 from app_types.models import DocumentType
+from architect.models.permission import Role
+from ubi_geo.models import Region, Province, District
+from ubi_geo.serializers import RegionSerializer, ProvinceSerializer, DistrictSerializer
 
 class EmployeeSerializer(serializers.ModelSerializer):
-    
+    region = RegionSerializer(read_only=True)
+    province = ProvinceSerializer(read_only=True)
+    district = DistrictSerializer(read_only=True)
     full_name = serializers.SerializerMethodField()
     photo_url = serializers.SerializerMethodField()
+    
+    # Campos personalizados para mostrar objetos con id y name
+    document_type = serializers.SerializerMethodField()
+    rol = serializers.SerializerMethodField()
+
+    region_name = serializers.CharField(source='region.name', read_only=True)
+    province_name = serializers.CharField(source='province.name', read_only=True)
+    district_name = serializers.CharField(source='district.name', read_only=True)
+
+    region_id = serializers.PrimaryKeyRelatedField(
+        queryset=Region.objects.all(), 
+        source='region', 
+        write_only=True
+    )
+    province_id = serializers.PrimaryKeyRelatedField(
+        queryset=Province.objects.all(), 
+        source='province', 
+        write_only=True
+    )
+    district_id = serializers.PrimaryKeyRelatedField(
+        queryset=District.objects.all(), 
+        source='district', 
+        write_only=True
+    )
+    document_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=DocumentType.objects.all(),
+        source='document_type',
+        write_only=True,
+        error_messages={
+            'does_not_exist': 'El tipo de documento seleccionado no existe.'
+        }
+    )
+    rol_id = serializers.PrimaryKeyRelatedField(
+        queryset=Role.objects.all(),
+        source='rol',
+        write_only=True,
+        error_messages={
+            'does_not_exist': 'El rol seleccionado no existe.'
+        }
+    )
 
     class Meta:
         model = Employees
@@ -16,7 +61,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'name', 'last_name_paternal', 'last_name_maternal', 'document_number',
             'email', 'gender', 'phone', 'birth_date', 'region', 'region_id', 'province',
             'province_id', 'district', 'district_id', 'salary', 'address', 'full_name', 
-            'photo_url', 'created_at', 'updated_at'
+            'photo_url', 'created_at', 'updated_at', 'region_name', 'province_name', 'district_name'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
         
@@ -105,13 +150,18 @@ class EmployeeSerializer(serializers.ModelSerializer):
             today = date.today()
 
             # No permitir fechas futuras
-            if value.date() > today:
+            if hasattr(value, 'date'):
+                birth_date = value.date()
+            else:
+                birth_date = value
+                
+            if birth_date > today:
                 raise serializers.ValidationError("La fecha de nacimiento no puede ser futura.")
 
             # Calcular edad
-            age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
             if age < 18:
-                raise serializers.ValidationError("El terapeuta debe tener al menos 18 años.")
+                raise serializers.ValidationError("El empleado debe tener al menos 18 años.")
 
         return value
         
@@ -131,3 +181,21 @@ class EmployeeSerializer(serializers.ModelSerializer):
     def get_photo_url(self, obj):
         """Retorna la URL de la foto del empleado"""
         return obj.get_photo_url()
+    
+    def get_document_type(self, obj):
+        """Retorna el tipo de documento con id y name"""
+        if obj.document_type:
+            return {"id": obj.document_type.id, "name": obj.document_type.name}
+        return None
+    
+    def get_rol(self, obj):
+        """Retorna el rol con id y name"""
+        if obj.rol:
+            return {"id": obj.rol.id, "name": obj.rol.name}
+        return None
+    
+    def create(self, validated_data):
+        """Override create para asegurar que se carguen las relaciones"""
+        employee = super().create(validated_data)
+        # Recargar con select_related para obtener las relaciones
+        return Employees.objects.select_related('document_type', 'rol', 'region', 'province', 'district').get(pk=employee.pk)
