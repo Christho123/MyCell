@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models.category import Category
 from .models.supplier import Supplier
+from .models.brand import Brand
 
 #Registrar el modelo en el admin
 @admin.register(Category)
@@ -17,4 +18,12 @@ class SupplierAdmin(admin.ModelAdmin):
             'email', 'address', 'account_number', 'region', 'province', 'district')
     search_fields = ('ruc', 'company_name', 'business_name', 'representative')
     ordering = ('company_name', 'ruc', 'representative', 'business_name')
+    readonly_fields = ('created_at', 'updated_at')
+    
+#Registrar el modelo en el admin
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'country')
+    search_fields = ('name', 'description', 'country__name')
+    ordering = ['name']
     readonly_fields = ('created_at', 'updated_at')
