@@ -6,8 +6,22 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from ..models.supplier import Supplier
 from datetime import datetime
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+def _json_body(request):
+    try:
+        return json.loads(request.body.decode() or "{}")
+    except Exception:
+        return {}
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def supplier_list(request):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -44,6 +58,9 @@ def supplier_list(request):
 
 
 @csrf_exempt
+@api_view(["POST"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def supplier_create(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -92,6 +109,9 @@ def supplier_create(request):
 
 
 @csrf_exempt
+@api_view(["PUT", "PATCH"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def supplier_update(request, pk):
     if request.method not in ["PUT", "PATCH"]:
         return HttpResponseNotAllowed(["PUT", "PATCH"])
@@ -146,6 +166,9 @@ def supplier_update(request, pk):
 
 
 @csrf_exempt
+@api_view(["DELETE"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def supplier_delete(request, pk):
     if request.method != "DELETE":
         return HttpResponseNotAllowed(["DELETE"])
@@ -162,6 +185,9 @@ def supplier_delete(request, pk):
 
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def supplier_detail(request, pk):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])

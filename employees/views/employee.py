@@ -9,6 +9,18 @@ from ..serializers.employee import EmployeeSerializer
 from datetime import datetime
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+def _json_body(request):
+    try:
+        return json.loads(request.body.decode() or "{}")
+    except Exception:
+        return {}
+
 
 class EmployeeViewSet(viewsets.ModelViewSet):
 
@@ -54,6 +66,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return qs
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_list(request):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -102,6 +117,9 @@ def employee_list(request):
 
 
 @csrf_exempt
+@api_view(["POST"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_create(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -161,6 +179,9 @@ def employee_create(request):
 
 
 @csrf_exempt
+@api_view(["PUT", "PATCH"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_update(request, pk):
     if request.method not in ["PUT", "PATCH"]:
         return HttpResponseNotAllowed(["PUT", "PATCH"])
@@ -227,6 +248,9 @@ def employee_update(request, pk):
 
 
 @csrf_exempt
+@api_view(["DELETE"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_delete(request, pk):
     if request.method != "DELETE":
         return HttpResponseNotAllowed(["DELETE"])
@@ -243,6 +267,9 @@ def employee_delete(request, pk):
 
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_detail(request, pk):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -291,6 +318,9 @@ def employee_detail(request, pk):
         return JsonResponse({"error": "Empleado no encontrado"}, status=404)
 
 @csrf_exempt
+@api_view(["POST"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_photo_upload(request, pk):
     """POST: Subir foto de empleado"""
     if request.method != "POST":
@@ -335,6 +365,9 @@ def employee_photo_upload(request, pk):
 
 
 @csrf_exempt
+@api_view(["PUT"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_photo_update(request, pk):
     """PUT: Actualizar foto de empleado - Usa POST internamente"""
     if request.method != "PUT":
@@ -354,6 +387,9 @@ def employee_photo_update(request, pk):
 
 
 @csrf_exempt
+@api_view(["DELETE"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def employee_photo_delete(request, pk):
     """DELETE: Eliminar foto de empleado"""
     if request.method != "DELETE":

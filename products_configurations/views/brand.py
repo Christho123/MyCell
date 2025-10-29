@@ -3,8 +3,22 @@ from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from ..models.brand import Brand
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+def _json_body(request):
+    try:
+        return json.loads(request.body.decode() or "{}")
+    except Exception:
+        return {}
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def brand_list(request):
     if request.method != "GET":
         return HttpResponseNotAllowed(["GET"])
@@ -26,6 +40,9 @@ def brand_list(request):
     return JsonResponse({"brands": data})
 
 @csrf_exempt
+@api_view(["POST"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def brand_create(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -76,6 +93,9 @@ def brand_create(request):
         return JsonResponse({"error": f"Error al crear la marca: {str(e)}"}, status=500)
 
 @csrf_exempt
+@api_view(["PUT", "PATCH"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def brand_update(request, pk):
     """
     Endpoint PUT para actualizar una marca existente
@@ -134,6 +154,9 @@ def brand_update(request, pk):
         return JsonResponse({"error": f"Error al actualizar la marca: {str(e)}"}, status=500)
 
 @csrf_exempt
+@api_view(["DELETE"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def brand_delete(request, pk):
     if request.method != "DELETE":
         return HttpResponseNotAllowed(["DELETE"])
@@ -147,6 +170,9 @@ def brand_delete(request, pk):
     return JsonResponse({"status": "deleted"})
 
 @csrf_exempt
+@api_view(["GET"]) 
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def brand_detail(request, pk):
     """
     GET - Obtener marca específica
