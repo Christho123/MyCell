@@ -63,6 +63,9 @@ class ProductSerializer(serializers.ModelSerializer):
         return value
 
     def validate_discount(self, value):
+        # Si el valor es None, lo tratamos como 0 para la validación
+        if value is None:
+            value = 0
         if not 0 <= value <= 100:
             raise serializers.ValidationError("El descuento debe estar entre 0 y 100%.")
         return value
@@ -70,7 +73,12 @@ class ProductSerializer(serializers.ModelSerializer):
     def validate(self, data):
         unit_price = data.get('unit_price', getattr(self.instance, 'unit_price', None))
         sales_price = data.get('sales_price', getattr(self.instance, 'sales_price', None))
-        if unit_price is not None and sales_price is not None and sales_price < unit_price:
+
+        # Convertir a Decimal si no son None, o usar 0 para la comparación si son None
+        unit_price_for_comparison = unit_price if unit_price is not None else 0
+        sales_price_for_comparison = sales_price if sales_price is not None else 0
+
+        if sales_price_for_comparison < unit_price_for_comparison:
             raise serializers.ValidationError("El precio de venta no puede ser menor que el precio unitario.")
         return data
 

@@ -100,9 +100,9 @@ def product_create(request):
             'sales_price': payload.get('sales_price'),
             'stock': payload.get('stock'),
             'discount': payload.get('discount'),
-            'category_id': payload.get('category'),
-            'supplier_id': payload.get('supplier'),
-            'brand_id': payload.get('brand'),
+            'category_id': payload.get('category_id'),
+            'supplier_id': payload.get('supplier_id'),
+            'brand_id': payload.get('brand_id'),
             'state': payload.get('state'),
         }
 
