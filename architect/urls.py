@@ -1,7 +1,7 @@
 from django.urls import path
 from .views.auth import LoginView, RegisterView, LogoutView
-from .views.user import UserView, UserPhotoUploadView
-from .views.permission import PermissionView, RoleView
+from .views.user import UserView, UserPhotoUploadView, UserPaginatedListView
+from .views.permission import PermissionView, RoleView, PermissionPaginatedListView, RolePaginatedListView
 
 app_name = 'architect'
 
@@ -12,14 +12,17 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     
     # Usuarios - Actualizado para soportar todas las operaciones
-    path('users/', UserView.as_view(), name='users'),  # GET (listar), POST (crear)
+    path('users/paginated/', UserPaginatedListView.as_view(), name='users_paginated'),
     path('users/<int:pk>/', UserView.as_view(), name='users_detail'),  # GET, PUT, PATCH, DELETE (operaciones específicas)
+    path('users/', UserView.as_view(), name='users'),  # GET (listar), POST (crear)
     path('users/<int:pk>/upload/', UserPhotoUploadView.as_view(), name='user_photo_upload'),  # POST (subir foto)
     
     # Permisos
+    path('permissions/paginated/', PermissionPaginatedListView.as_view(), name='permissions_paginated'),
     path('permissions/', PermissionView.as_view(), name='permissions'),
     
     # Roles
+    path('roles/paginated/', RolePaginatedListView.as_view(), name='roles_paginated'),
     path('roles/', RoleView.as_view(), name='roles_list'),
     path('roles/<int:pk>/', RoleView.as_view(), name='roles_detail'),
     path('roles/create/', RoleView.as_view(), name='roles_create'),

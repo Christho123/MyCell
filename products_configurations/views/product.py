@@ -14,6 +14,37 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import paginate_queryset
+
+
+def _product_row(p):
+    return {
+        "id": p.id,
+        "name": p.name,
+        "description": p.description,
+        "model": p.model,
+        "unit_price": p.unit_price,
+        "sales_price": p.sales_price,
+        "stock": p.stock,
+        "discount": p.discount,
+        "photo_url": p.get_photo_url(),
+        "category": (
+            {"id": p.category.id, "name": p.category.name}
+            if p.category else None
+        ),
+        "supplier": (
+            {"id": p.supplier.id, "name": p.supplier.company_name}
+            if p.supplier else None
+        ),
+        "brand": (
+            {"id": p.brand.id, "name": p.brand.name}
+            if p.brand else None
+        ),
+        "state": p.state,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "updated_at": p.updated_at.isoformat() if p.updated_at else None,
+    }
+
 
 def _json_body(request):
     try:
@@ -47,35 +78,17 @@ def product_list(request):
         return HttpResponseNotAllowed(["GET"])
     
     qs = Product.objects.select_related("category", "supplier", "brand")
-    data = []
-    for p in qs:
-        data.append({
-            "id": p.id,
-            "name": p.name,
-            "description": p.description,
-            "model": p.model,
-            "unit_price": p.unit_price,
-            "sales_price": p.sales_price,
-            "stock": p.stock,
-            "discount": p.discount,
-            "photo_url": p.get_photo_url(),
-            "category": (
-                {"id": p.category.id, "name": p.category.name}
-                if p.category else None
-            ),
-            "supplier": (
-                {"id": p.supplier.id, "name": p.supplier.company_name}
-                if p.supplier else None
-            ),
-            "brand": (
-                {"id": p.brand.id, "name": p.brand.name}
-                if p.brand else None
-            ),
-            "state": p.state,
-            "created_at": p.created_at.isoformat() if p.created_at else None,
-            "updated_at": p.updated_at.isoformat() if p.updated_at else None
-        })
+    data = [_product_row(p) for p in qs]
     return JsonResponse({"products": data})
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def product_list_paginated(request):
+    qs = Product.objects.select_related("category", "supplier", "brand").order_by("id")
+    return paginate_queryset(request, qs, _product_row)
 
 
 @csrf_exempt

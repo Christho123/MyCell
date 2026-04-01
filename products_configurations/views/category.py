@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import paginate_queryset
+
 from ..serializers.category import CategorySerializer
 from ..services import category_service as service
 
@@ -25,6 +27,15 @@ def category_list(request):
     items = service.list_active()
     data = CategorySerializer(items, many=True).data
     return JsonResponse({"category": data})
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def category_list_paginated(request):
+    qs = service.list_active()
+    return paginate_queryset(request, qs, lambda c: CategorySerializer(c).data)
 
 
 @csrf_exempt

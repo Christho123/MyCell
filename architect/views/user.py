@@ -1,13 +1,33 @@
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+
+from pagination import AllowedSizesPageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from ..serializers.user import UserSerializer
 
 User = get_user_model()
+
+
+class UserPaginatedListView(generics.ListAPIView):
+    """GET users/paginated/ — lista paginada (10, 20, 50)."""
+
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = AllowedSizesPageNumberPagination
+
+    def get_queryset(self):
+        return User.objects.all().order_by("id")
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
+
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]

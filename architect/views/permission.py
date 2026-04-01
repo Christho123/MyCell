@@ -1,9 +1,27 @@
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+
+from pagination import AllowedSizesPageNumberPagination
+
 from ..serializers.permission import PermissionSerializer, RoleSerializer
 from ..models.permission import Permission, Role
+
+
+class PermissionPaginatedListView(generics.ListAPIView):
+    queryset = Permission.objects.all().order_by("id")
+    serializer_class = PermissionSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = AllowedSizesPageNumberPagination
+
+
+class RolePaginatedListView(generics.ListAPIView):
+    queryset = Role.objects.all().order_by("id")
+    serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = AllowedSizesPageNumberPagination
 
 
 class PermissionView(APIView):

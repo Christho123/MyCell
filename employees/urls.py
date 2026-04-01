@@ -1,11 +1,19 @@
 from django.urls import path
 from .views.employee import (
-    employee_list, employee_create, employee_delete, employee_update, employee_detail,
-    employee_photo_upload, employee_photo_update, employee_photo_delete
+    employee_list,
+    employee_list_paginated,
+    employee_create,
+    employee_delete,
+    employee_update,
+    employee_detail,
+    employee_photo_upload,
+    employee_photo_update,
+    employee_photo_delete,
 )
 
 urlpatterns = [
     # Rutas de empleados
+    path("employee/paginated/", employee_list_paginated, name="employee_list_paginated"),
     path("employee/", employee_list, name="employee_list"),
     path("employee/create/", employee_create, name="employee_create"),
     path("employee/<int:pk>/", employee_detail, name="employee_detail"),

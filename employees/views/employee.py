@@ -14,6 +14,48 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import paginate_queryset
+
+
+def _employee_row(e):
+    return {
+        "id": e.id,
+        "name": e.name,
+        "last_name_paternal": e.last_name_paternal,
+        "last_name_maternal": e.last_name_maternal,
+        "full_name": e.get_full_name(),
+        "document_type": (
+            {"id": e.document_type.id, "name": e.document_type.name}
+            if e.document_type else None
+        ),
+        "document_number": e.document_number,
+        "email": e.email,
+        "gender": e.gender,
+        "phone": e.phone,
+        "birth_date": e.birth_date.isoformat() if e.birth_date else None,
+        "region": (
+            {"id": e.region.id, "name": e.region.name}
+            if e.region else None
+        ),
+        "province": (
+            {"id": e.province.id, "name": e.province.name}
+            if e.province else None
+        ),
+        "district": (
+            {"id": e.district.id, "name": e.district.name}
+            if e.district else None
+        ),
+        "rol": (
+            {"id": e.rol.id, "name": e.rol.name}
+            if e.rol else None
+        ),
+        "salary": e.salary,
+        "address": e.address,
+        "photo_url": e.get_photo_url(),
+        "created_at": e.created_at.isoformat() if e.created_at else None,
+        "updated_at": e.updated_at.isoformat() if e.updated_at else None,
+    }
+
 
 def _json_body(request):
     try:
@@ -74,46 +116,19 @@ def employee_list(request):
         return HttpResponseNotAllowed(["GET"])
     
     qs = Employees.objects.select_related("document_type", "rol", "region", "province", "district")
-    data = []
-    for e in qs:
-        data.append({
-            "id": e.id,
-            "name": e.name,
-            "last_name_paternal": e.last_name_paternal,
-            "last_name_maternal": e.last_name_maternal,
-            "full_name": e.get_full_name(),
-            "document_type": (
-                {"id": e.document_type.id, "name": e.document_type.name}
-                if e.document_type else None
-            ),
-            "document_number": e.document_number,
-            "email": e.email,
-            "gender": e.gender,
-            "phone": e.phone,
-            "birth_date": e.birth_date.isoformat() if e.birth_date else None,
-            "region": (
-                {"id": e.region.id, "name": e.region.name}
-                if e.region else None
-            ),
-            "province": (
-                {"id": e.province.id, "name": e.province.name}
-                if e.province else None
-            ),
-            "district": (
-                {"id": e.district.id, "name": e.district.name}
-                if e.district else None
-            ),
-            "rol": (
-                {"id": e.rol.id, "name": e.rol.name}
-                if e.rol else None
-            ),
-            "salary": e.salary,
-            "address": e.address,
-            "photo_url": e.get_photo_url(),
-            "created_at": e.created_at.isoformat() if e.created_at else None,
-            "updated_at": e.updated_at.isoformat() if e.updated_at else None
-        })
+    data = [_employee_row(e) for e in qs]
     return JsonResponse({"employees": data})
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def employee_list_paginated(request):
+    qs = Employees.objects.select_related(
+        "document_type", "rol", "region", "province", "district"
+    ).order_by("id")
+    return paginate_queryset(request, qs, _employee_row)
 
 
 @csrf_exempt

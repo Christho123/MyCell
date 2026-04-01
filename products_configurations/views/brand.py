@@ -8,6 +8,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import paginate_queryset
+
+
+def _brand_row(b):
+    return {
+        "id": b.id,
+        "name": b.name,
+        "description": b.description,
+        "country": (
+            {"id": b.country_id, "name": b.country.name}
+            if b.country else None
+        ),
+        "created_at": b.created_at.isoformat() if b.created_at else None,
+        "updated_at": b.updated_at.isoformat() if b.updated_at else None,
+    }
+
 
 def _json_body(request):
     try:
@@ -24,20 +40,18 @@ def brand_list(request):
         return HttpResponseNotAllowed(["GET"])
 
     qs = Brand.objects.select_related("country")
-    data = []
-    for b in qs:
-        data.append({
-            "id": b.id,
-            "name": b.name,
-            "description": b.description,
-            "country": (
-                {"id": b.country_id, "name": b.country.name}
-                if b.country else None
-            ),
-            "created_at": b.created_at.isoformat() if b.created_at else None,
-            "updated_at": b.updated_at.isoformat() if b.updated_at else None
-        })
+    data = [_brand_row(b) for b in qs]
     return JsonResponse({"brands": data})
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def brand_list_paginated(request):
+    qs = Brand.objects.select_related("country").order_by("id")
+    return paginate_queryset(request, qs, _brand_row)
+
 
 @csrf_exempt
 @api_view(["POST"]) 

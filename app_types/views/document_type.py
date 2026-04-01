@@ -1,11 +1,15 @@
 import json
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import AllowedSizesPageNumberPagination
+
+from ..models.document_type import DocumentType
 from ..serializers.document_type import DocumentTypeSerializer
 from ..services import document_type_service as service
 
@@ -17,18 +21,43 @@ def _json_body(request):
         return {}
 
 
+class DocumentTypePublicListView(generics.ListAPIView):
+    """GET /document_type/ — público, paginado (page_size: 10, 20, 50)."""
+
+    serializer_class = DocumentTypeSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    pagination_class = AllowedSizesPageNumberPagination
+
+    def get_queryset(self):
+        return DocumentType.objects.filter(deleted_at__isnull=True).order_by("name")
+
+
+class DocumentTypePaginatedListView(generics.ListAPIView):
+    """GET /document_type/paginated/ — JWT, paginado (10, 20, 50)."""
+
+    serializer_class = DocumentTypeSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication, SessionAuthentication, BasicAuthentication]
+    pagination_class = AllowedSizesPageNumberPagination
+
+    def get_queryset(self):
+        return DocumentType.objects.filter(deleted_at__isnull=True).order_by("name")
+
+
 @csrf_exempt
-@api_view(["GET"]) 
+@api_view(["GET"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
-def document_type_list(request):
+def document_type_all(request):
+    """GET /document_type/all/ — JWT, lista completa sin paginar."""
     items = service.list_active()
     data = DocumentTypeSerializer(items, many=True).data
     return JsonResponse({"document_type": data})
 
 
 @csrf_exempt
-@api_view(["POST"]) 
+@api_view(["POST"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def document_type_create(request):
@@ -41,7 +70,7 @@ def document_type_create(request):
 
 
 @csrf_exempt
-@api_view(["PUT", "PATCH"]) 
+@api_view(["PUT", "PATCH"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def document_type_edit(request, pk: int):
@@ -58,7 +87,7 @@ def document_type_edit(request, pk: int):
 
 
 @csrf_exempt
-@api_view(["DELETE"]) 
+@api_view(["DELETE"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def document_type_delete(request, pk: int):
@@ -70,7 +99,7 @@ def document_type_delete(request, pk: int):
 
 
 @csrf_exempt
-@api_view(["GET"]) 
+@api_view(["GET"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def document_type_detail(request, pk: int):

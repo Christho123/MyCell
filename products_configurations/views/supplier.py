@@ -11,6 +11,36 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from pagination import paginate_queryset
+
+
+def _supplier_row(s):
+    return {
+        "id": s.id,
+        "ruc": s.ruc,
+        "company_name": s.company_name,
+        "business_name": s.business_name,
+        "representative": s.representative,
+        "phone": s.phone,
+        "email": s.email,
+        "address": s.address,
+        "account_number": s.account_number,
+        "region": (
+            {"id": s.region.id, "name": s.region.name}
+            if s.region else None
+        ),
+        "province": (
+            {"id": s.province.id, "name": s.province.name}
+            if s.province else None
+        ),
+        "district": (
+            {"id": s.district.id, "name": s.district.name}
+            if s.district else None
+        ),
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+        "updated_at": s.updated_at.isoformat() if s.updated_at else None,
+    }
+
 
 def _json_body(request):
     try:
@@ -27,34 +57,17 @@ def supplier_list(request):
         return HttpResponseNotAllowed(["GET"])
     
     qs = Supplier.objects.select_related("region", "province", "district")
-    data = []
-    for s in qs:
-        data.append({
-            "id": s.id,
-            "ruc": s.ruc,
-            "company_name": s.company_name,
-            "business_name": s.business_name,
-            "representative": s.representative,
-            "phone": s.phone,
-            "email": s.email,
-            "address": s.address,
-            "account_number": s.account_number,
-            "region": (
-                {"id": s.region.id, "name": s.region.name}
-                if s.region else None
-            ),
-            "province": (
-                {"id": s.province.id, "name": s.province.name}
-                if s.province else None
-            ),
-            "district": (
-                {"id": s.district.id, "name": s.district.name}
-                if s.district else None
-            ),
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-            "updated_at": s.updated_at.isoformat() if s.updated_at else None
-        })
+    data = [_supplier_row(s) for s in qs]
     return JsonResponse({"suppliers": data})
+
+
+@csrf_exempt
+@api_view(["GET"])
+@authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
+@permission_classes([IsAuthenticated])
+def supplier_list_paginated(request):
+    qs = Supplier.objects.select_related("region", "province", "district").order_by("id")
+    return paginate_queryset(request, qs, _supplier_row)
 
 
 @csrf_exempt

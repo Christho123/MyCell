@@ -2,9 +2,10 @@
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from ubi_geo.models.district import District
 from ubi_geo.serializers.district import DistrictSerializer
+from .geo_paginated_mixin import PaginatedListActionMixin
 
 
-class DistrictViewSet(ReadOnlyModelViewSet):
+class DistrictViewSet(PaginatedListActionMixin, ReadOnlyModelViewSet):
     """
     GET /api/districts/                  -> lista (se puede filtrar)
     GET /api/districts/{id}/             -> detalle
@@ -13,6 +14,7 @@ class DistrictViewSet(ReadOnlyModelViewSet):
       - ?province=<id>           -> distritos de esa provincia
     """
     serializer_class = DistrictSerializer
+    pagination_class = None
 
     def get_queryset(self):
         qs = (
