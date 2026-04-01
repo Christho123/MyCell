@@ -88,6 +88,7 @@ DATABASES = {
         'HOST': 'servidor-leonardo-ds501.mysql.database.azure.com',
         'PORT': '3306',
         'OPTIONS': {
+            'ssl': {'ssl': {}},
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
