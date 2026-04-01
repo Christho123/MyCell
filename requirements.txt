@@ -1,32 +1,37 @@
-# Librerías principales del proyecto - Compatibles con Python 3.13
+# CORE DJANGO
 Django==5.1.5
+asgiref==3.8.1
+sqlparse==0.5.1
+
+# DJANGO EXTENSIONS
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 django-filter==24.3
+django-cors-headers==4.4.0
 django-guardian==2.4.0
-django-cors-headers==4.3.1
-PyMySQL==1.1.1
-django-xhtml2pdf==0.0.3
-xhtml2pdf==0.2.11
-xlsxwriter==3.2.0
-whitenoise==6.6.0
-Pillow==10.4.0
+whitenoise==6.7.0
 python-decouple==3.8
 
-# Dependencias implícitas de Django y librerías usadas
-pytz==2024.2
-sqlparse==0.5.1
-asgiref==3.8.1
+# DATABASE
+PyMySQL==1.1.1
 
-# Dependencias de xhtml2pdf - Actualizadas para compatibilidad
-reportlab==3.6.13
+# EXPORTACIONES
+django-xhtml2pdf==0.0.3
+xhtml2pdf==0.2.13
+reportlab==4.2.0
+pypdf==4.3.1
 html5lib==1.1
-pypdf==4.2.0  # Reemplaza PyPDF2 (deprecado)
 arabic-reshaper==3.0.0
 python-bidi==0.4.2
+xlsxwriter==3.2.0
 
-# Dependencias opcionales pero recomendadas
-six==1.16.0
+# IMÁGENES
+Pillow==10.4.0
 
-# Servidor WSGI para producción
+# CELERY
+celery==5.4.0
+django-celery-beat==2.7.0
+redis==5.0.7
+
+# PRODUCCIÓN
 gunicorn==22.0.0

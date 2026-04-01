@@ -82,10 +82,10 @@ pymysql.install_as_MySQLdb()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'MyCell',
-        'USER': 'MyCell',
-        'PASSWORD': 'MyCell159//',
-        'HOST': '127.0.0.1',
+        'NAME': 'KMLStore',
+        'USER': 'leonardo',
+        'PASSWORD': 'Leonardo159//',
+        'HOST': 'servidor-leonardo-ds501.mysql.database.azure.com',
         'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
@@ -93,7 +93,6 @@ DATABASES = {
         },
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
