@@ -2,6 +2,7 @@ from .user import UserSerializer, UserUpdateSerializer, UserProfilePhotoSerializ
 from .profile import ProfileSerializer, ProfileUpdateSerializer, ProfileCreateSerializer, PublicProfileSerializer, ProfileSettingsSerializer
 from .password import PasswordChangeSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, PasswordStrengthSerializer
 from .verification import VerificationCodeSerializer, EmailChangeSerializer, EmailChangeConfirmSerializer, VerificationCodeRequestSerializer, VerificationCodeResendSerializer, VerificationStatusSerializer
+from .register import PublicRegisterSerializer
 
 __all__ = [
     # Serializadores de Usuario
@@ -28,5 +29,7 @@ __all__ = [
     'EmailChangeConfirmSerializer',
     'VerificationCodeRequestSerializer',
     'VerificationCodeResendSerializer',
-    'VerificationStatusSerializer'
+    'VerificationStatusSerializer',
+
+    'PublicRegisterSerializer',
 ]

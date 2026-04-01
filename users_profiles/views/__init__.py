@@ -1,9 +1,12 @@
+from .register import PublicRegisterView
 from .user import UserDetailView, UserUpdateView, UserProfilePhotoView, UserSearchView, UserProfileView
 from .profile import ProfileDetailView, ProfileCreateView, PublicProfileView, ProfileSettingsView, ProfileCompletionView, ProfileSearchView
 from .password import PasswordChangeView, PasswordResetView, PasswordResetConfirmView, PasswordStrengthView, PasswordHistoryView, PasswordPolicyView
 from .verification import VerificationCodeView, EmailChangeView, EmailChangeConfirmView, VerificationCodeResendView, VerificationStatusView, EmailVerificationView, EmailVerificationConfirmView
 
 __all__ = [
+    'PublicRegisterView',
+
     # Vistas de usuarios
     'UserDetailView', 'UserUpdateView', 'UserProfilePhotoView', 'UserSearchView', 'UserProfileView',
     

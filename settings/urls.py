@@ -11,21 +11,13 @@ def health_check(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', health_check, name='health_check'),
-    
-    path('api/', include([
-        path('architect/', include('architect.urls')),
-        
-        path('profiles/', include('users_profiles.urls')),
-
-        path('employees/', include('employees.urls')),
-
-        path('locations/', include('ubi_geo.urls')),
-
-        path('types/', include('app_types.urls')),
-
-        path('products/', include('products_configurations.urls')),
-        path('company/', include('company_reports.urls')),
-    ])),
+    path('api/architect/', include('architect.urls')),
+    path('api/profiles/', include('users_profiles.urls')),
+    path('api/employees/', include('employees.urls')),
+    path('api/locations/', include('ubi_geo.urls')),
+    path('api/types/', include('app_types.urls')),
+    path('api/products/', include('products_configurations.urls')),
+    path('api/company/', include('company_reports.urls')),
 ]
 
 if settings.DEBUG:
