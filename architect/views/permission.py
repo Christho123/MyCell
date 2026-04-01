@@ -18,7 +18,7 @@ class PermissionPaginatedListView(generics.ListAPIView):
 
 
 class RolePaginatedListView(generics.ListAPIView):
-    queryset = Role.objects.all().order_by("id")
+    queryset = Role.objects.all().order_by("-created_at", "-id")
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = AllowedSizesPageNumberPagination
@@ -36,8 +36,16 @@ class PermissionView(APIView):
 class RoleView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        roles = Role.objects.all()
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                role = Role.objects.get(pk=pk)
+            except Role.DoesNotExist:
+                return Response({"error": "Rol no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            serializer = RoleSerializer(role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        roles = Role.objects.all().order_by("-created_at", "-id")
         serializer = RoleSerializer(roles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

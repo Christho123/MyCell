@@ -48,6 +48,14 @@ def _json_body(request):
     except Exception:
         return {}
 
+
+def _fk_from_payload(payload, *keys):
+    """Acepta region o region_id (y análogos para province/district)."""
+    for k in keys:
+        if k in payload and payload[k] is not None:
+            return payload[k]
+    return None
+
 @csrf_exempt
 @api_view(["GET"]) 
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
@@ -66,7 +74,9 @@ def supplier_list(request):
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def supplier_list_paginated(request):
-    qs = Supplier.objects.select_related("region", "province", "district").order_by("id")
+    qs = Supplier.objects.select_related("region", "province", "district").order_by(
+        "-created_at", "-id"
+    )
     return paginate_queryset(request, qs, _supplier_row)
 
 
@@ -84,32 +94,37 @@ def supplier_create(request):
         return JsonResponse({"error": f"Error al procesar JSON: {str(e)}"}, status=400)
 
     try:
-        # Preparar datos para el serializer
+        # Preparar datos para el serializer (region | region_id, etc.)
         supplier_data = {
-            "ruc": payload.get('ruc'),
-            "company_name": payload.get('company_name'),
-            "business_name": payload.get('business_name'),
-            "representative": payload.get('representative'),
-            "phone": payload.get('phone'),
-            "email": payload.get('email'),
-            "address": payload.get('address'),
-            "account_number": payload.get('account_number'),
-            'region_id': payload.get('region'),
-            'province_id': payload.get('province'),
-            'district_id': payload.get('district'),
+            "ruc": payload.get("ruc"),
+            "company_name": payload.get("company_name"),
+            "business_name": payload.get("business_name"),
+            "representative": payload.get("representative"),
+            "phone": payload.get("phone"),
+            "email": payload.get("email"),
+            "address": payload.get("address"),
+            "account_number": payload.get("account_number"),
+            "region_id": _fk_from_payload(payload, "region", "region_id"),
+            "province_id": _fk_from_payload(payload, "province", "province_id"),
+            "district_id": _fk_from_payload(payload, "district", "district_id"),
         }
 
         # Usar el serializer para validar y crear
         from ..serializers.supplier import SupplierSerializer
+
         serializer = SupplierSerializer(data=supplier_data)
-        
+
         if serializer.is_valid():
             supplier = serializer.save()
-            
-            # Respuesta usando el serializer para obtener el formato correcto
+            supplier = Supplier.objects.select_related("region", "province", "district").get(
+                pk=supplier.pk
+            )
+            serializer = SupplierSerializer(supplier)
+
+            # Respuesta: region/province/district con datos anidados
             response_data = {
                 "message": "Proveedor creado exitosamente",
-                "supplier": serializer.data
+                "supplier": serializer.data,
             }
             
             return JsonResponse(response_data, status=201)
@@ -141,22 +156,25 @@ def supplier_update(request, pk):
     except (json.JSONDecodeError, UnicodeDecodeError) as e:
         return JsonResponse({"error": f"Error al procesar JSON: {str(e)}"}, status=400)
     
-    # Preparar datos para el serializer
+    # Preparar datos para el serializer (acepta region o region_id, etc.)
     supplier_data = {}
     field_mapping = {
-        'ruc': 'ruc',
-        'company_name': 'company_name',
-        'business_name': 'business_name',
-        'representative': 'representative',
-        'phone': 'phone',
-        'email': 'email',
-        'address': 'address',
-        'account_number': 'account_number',
-        'region': 'region_id',
-        'province': 'province_id',
-        'district': 'district_id',
+        "ruc": "ruc",
+        "company_name": "company_name",
+        "business_name": "business_name",
+        "representative": "representative",
+        "phone": "phone",
+        "email": "email",
+        "address": "address",
+        "account_number": "account_number",
+        "region": "region_id",
+        "region_id": "region_id",
+        "province": "province_id",
+        "province_id": "province_id",
+        "district": "district_id",
+        "district_id": "district_id",
     }
-    
+
     for payload_field, model_field in field_mapping.items():
         if payload_field in payload:
             supplier_data[model_field] = payload[payload_field]
@@ -166,13 +184,15 @@ def supplier_update(request, pk):
     serializer = SupplierSerializer(supplier, data=supplier_data, partial=True)
     
     if serializer.is_valid():
-        updated_supplier = serializer.save()
-        
+        serializer.save()
+        updated = Supplier.objects.select_related("region", "province", "district").get(pk=pk)
+        serializer = SupplierSerializer(updated)
+
         response_data = {
             "message": "Proveedor actualizado exitosamente",
-            "supplier": serializer.data
+            "supplier": serializer.data,
         }
-        
+
         return JsonResponse(response_data, status=200)
     else:
         return JsonResponse({"errors": serializer.errors}, status=400)

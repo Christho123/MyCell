@@ -8,6 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from pagination import paginate_queryset
 
+from ..models.category import Category
 from ..serializers.category import CategorySerializer
 from ..services import category_service as service
 
@@ -34,7 +35,7 @@ def category_list(request):
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def category_list_paginated(request):
-    qs = service.list_active()
+    qs = Category.objects.filter(deleted_at__isnull=True).order_by("-created_at", "-id")
     return paginate_queryset(request, qs, lambda c: CategorySerializer(c).data)
 
 

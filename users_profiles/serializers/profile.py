@@ -9,8 +9,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     Usado principalmente para mostrar el perfil completo al propietario.
     """
     
-    user = UserSerializer(read_only=True)  # Información del usuario asociado
     completion_percentage = serializers.SerializerMethodField()  # Porcentaje calculado
+    document_type = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -24,7 +25,19 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     def get_completion_percentage(self, obj):
         """Calcula y retorna el porcentaje de completitud del perfil."""
-        return obj.get_completion_percentage()
+        required_fields = ['name', 'email', 'phone', 'photo_url']
+        completed_fields = sum(1 for field in required_fields if getattr(obj, field, None))
+        return (completed_fields / len(required_fields)) * 100
+
+    def get_document_type(self, obj):
+        if obj.document_type:
+            return {"id": obj.document_type.id, "name": obj.document_type.name}
+        return None
+
+    def get_country(self, obj):
+        if obj.country:
+            return {"id": obj.country.id, "name": obj.country.name}
+        return None
 
 
 class ProfileCreateSerializer(serializers.ModelSerializer):
@@ -69,6 +82,9 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             'name', 'paternal_lastname', 'maternal_lastname',
             'sex', 'email', 'phone', 'document_number', 'document_type', 'country'
         ]
+        extra_kwargs = {
+            'email': {'required': False},
+        }
     
     def validate_email(self, value):
         """Valida que el email no esté en uso por otro perfil."""

@@ -49,7 +49,7 @@ def brand_list(request):
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def brand_list_paginated(request):
-    qs = Brand.objects.select_related("country").order_by("id")
+    qs = Brand.objects.select_related("country").order_by("-created_at", "-id")
     return paginate_queryset(request, qs, _brand_row)
 
 

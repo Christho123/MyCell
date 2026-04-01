@@ -3,13 +3,30 @@ from ..models import Supplier
 import re
 from datetime import date
 from ubi_geo.models import Region, Province, District
-from ubi_geo.serializers import RegionSerializer, ProvinceSerializer, DistrictSerializer
+
+
+class RegionIdNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = ("id", "name")
+
+
+class ProvinceIdNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Province
+        fields = ("id", "name")
+
+
+class DistrictIdNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = District
+        fields = ("id", "name")
+
 
 class SupplierSerializer(serializers.ModelSerializer):
-    # Serializadores anidados para mostrar datos completos
-    region = RegionSerializer(read_only=True)
-    province = ProvinceSerializer(read_only=True)
-    district = DistrictSerializer(read_only=True)
+    region = RegionIdNameSerializer(read_only=True)
+    province = ProvinceIdNameSerializer(read_only=True)
+    district = DistrictIdNameSerializer(read_only=True)
     
     # Campos de nombres para mostrar en lugar de IDs
     region_name = serializers.CharField(source='region.name', read_only=True)

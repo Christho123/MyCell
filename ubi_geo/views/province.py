@@ -1,19 +1,24 @@
-# -*- coding: utf-8 -*-
-from rest_framework.viewsets import ReadOnlyModelViewSet
+﻿# -*- coding: utf-8 -*-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.viewsets import ModelViewSet
+
 from ubi_geo.models.province import Province
 from ubi_geo.serializers.province import ProvinceSerializer
 from .geo_paginated_mixin import PaginatedListActionMixin
 
 
-class ProvinceViewSet(PaginatedListActionMixin, ReadOnlyModelViewSet):
+class ProvinceViewSet(PaginatedListActionMixin, ModelViewSet):
     """
-    GET /api/provinces/                 -> lista (se puede filtrar)
-    GET /api/provinces/{id}/            -> detalle
+    GET /api/locations/provinces/         -> lista (se puede filtrar)
+    GET /api/locations/provinces/{id}/    -> detalle
+    POST/PUT/PATCH/DELETE                 -> CRUD con JWT
 
     Filtros por querystring:
       - ?region=<id>            -> provincias de esa región
     """
+
     serializer_class = ProvinceSerializer
+    permission_classes = [IsAuthenticated]
     pagination_class = None
 
     def get_queryset(self):

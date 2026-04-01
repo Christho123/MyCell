@@ -1,15 +1,17 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from ubi_geo.models.region import Region
 
 
 class RegionSerializer(serializers.ModelSerializer):
     """Serializer para el modelo Region"""
-    
+
+    country_name = serializers.CharField(source='country.name', read_only=True)
+
     class Meta:
         model = Region
-        fields = ['id', 'name', 'country', 'created_at', 'updated_at', 'deleted_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'deleted_at']
-    
+        fields = ['id', 'name', 'country', 'country_name', 'created_at', 'updated_at', 'deleted_at']
+        read_only_fields = ['id', 'country_name', 'created_at', 'updated_at', 'deleted_at']
+
     def validate_name(self, value):
         """Validar que el nombre no esté vacío"""
         if not value or not value.strip():

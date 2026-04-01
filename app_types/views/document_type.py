@@ -42,7 +42,7 @@ class DocumentTypePaginatedListView(generics.ListAPIView):
     pagination_class = AllowedSizesPageNumberPagination
 
     def get_queryset(self):
-        return DocumentType.objects.filter(deleted_at__isnull=True).order_by("name")
+        return DocumentType.objects.filter(deleted_at__isnull=True).order_by("-created_at", "-id")
 
 
 @csrf_exempt

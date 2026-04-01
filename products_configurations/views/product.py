@@ -87,7 +87,9 @@ def product_list(request):
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def product_list_paginated(request):
-    qs = Product.objects.select_related("category", "supplier", "brand").order_by("id")
+    qs = Product.objects.select_related("category", "supplier", "brand").order_by(
+        "-created_at", "-id"
+    )
     return paginate_queryset(request, qs, _product_row)
 
 

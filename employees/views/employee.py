@@ -333,14 +333,11 @@ def employee_detail(request, pk):
         return JsonResponse({"error": "Empleado no encontrado"}, status=404)
 
 @csrf_exempt
-@api_view(["POST"]) 
+@api_view(["POST"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def employee_photo_upload(request, pk):
-    """POST: Subir foto de empleado"""
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-    
+    """POST: Subir foto de empleado (multipart form-data)."""
     try:
         employee = Employees.objects.get(pk=pk)
     except Employees.DoesNotExist:
@@ -363,42 +360,75 @@ def employee_photo_upload(request, pk):
     try:
         # Eliminar foto anterior si existe
         if employee.photo:
-            if os.path.isfile(employee.photo.path):
-                os.remove(employee.photo.path)
-        
+            try:
+                if os.path.isfile(employee.photo.path):
+                    os.remove(employee.photo.path)
+            except Exception:
+                # Si no hay path (storage remoto) o falla el borrado, no bloqueamos el update.
+                pass
+
         # Guardar nueva foto
         employee.photo = photo_file
         employee.save()
-        
-        return JsonResponse({
-            "message": "Foto subida exitosamente",
-            "photo_url": employee.get_photo_url()
-        }, status=200)
-        
+
+        return JsonResponse(
+            {
+                "message": "Foto subida exitosamente",
+                "photo_url": employee.get_photo_url(),
+            },
+            status=200,
+        )
+
     except Exception as e:
-        return JsonResponse({"error": f"Error al subir la foto: {str(e)}"}, status=500)
+        return JsonResponse({"error": f"Error al guardar la foto: {str(e)}"}, status=500)
 
 
 @csrf_exempt
-@api_view(["PUT"]) 
+@api_view(["PUT"])
 @authentication_classes([JWTAuthentication, SessionAuthentication, BasicAuthentication])
 @permission_classes([IsAuthenticated])
 def employee_photo_update(request, pk):
-    """PUT: Actualizar foto de empleado - Usa POST internamente"""
-    if request.method != "PUT":
-        return HttpResponseNotAllowed(["PUT"])
-    
+    """
+    PUT: Actualizar foto de empleado.
+    Endpoint único para editar foto (multipart form-data).
+    """
     try:
         employee = Employees.objects.get(pk=pk)
     except Employees.DoesNotExist:
         return JsonResponse({"error": "Empleado no encontrado"}, status=404)
-    
-    # Para PUT, redirigir a la función de upload que ya funciona
-    # Cambiar el método a POST temporalmente para que Django parsee los archivos
-    request.method = 'POST'
-    
-    # Llamar a la función de upload que ya funciona
-    return employee_photo_upload(request, pk)
+
+    if "photo" not in request.FILES:
+        return JsonResponse({"error": "No se encontró el archivo 'photo' en la petición"}, status=400)
+
+    photo_file = request.FILES["photo"]
+
+    allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+    if photo_file.content_type not in allowed_types:
+        return JsonResponse(
+            {"error": "Tipo de archivo no permitido. Solo se permiten imágenes (JPEG, PNG, GIF)"},
+            status=400,
+        )
+
+    if photo_file.size > 5 * 1024 * 1024:
+        return JsonResponse({"error": "El archivo es demasiado grande. Máximo 5MB"}, status=400)
+
+    try:
+        if employee.photo:
+            try:
+                if os.path.isfile(employee.photo.path):
+                    os.remove(employee.photo.path)
+            except Exception:
+                pass
+
+        employee.photo = photo_file
+        employee.save()
+
+        return JsonResponse(
+            {"message": "Foto actualizada exitosamente", "photo_url": employee.get_photo_url()},
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse({"error": f"Error al guardar la foto: {str(e)}"}, status=500)
 
 
 @csrf_exempt

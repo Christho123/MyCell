@@ -14,6 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     full_name = serializers.SerializerMethodField()  # Nombre completo calculado
     profile_photo_url = serializers.SerializerMethodField()  # URL de foto de perfil
+    document_type = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -40,6 +42,16 @@ class UserSerializer(serializers.ModelSerializer):
                     return str(obj.photo_url)
             else:
                 return str(obj.photo_url)
+        return None
+
+    def get_document_type(self, obj):
+        if obj.document_type:
+            return {"id": obj.document_type.id, "name": obj.document_type.name}
+        return None
+
+    def get_country(self, obj):
+        if obj.country:
+            return {"id": obj.country.id, "name": obj.country.name}
         return None
 
 class UserUpdateSerializer(serializers.ModelSerializer):
