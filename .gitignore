@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files (no subir __pycache__ ni .pyc)
 __pycache__/
 *.py[cod]
 *$py.class
@@ -158,9 +158,9 @@ cython_debug/
 #  project, it is recommended to exclude the following files:
 #  .idea/
 
-# Django migrations (exclude all migrations)
-*/migrations/*.py
-!*/migrations/__init__.py
+# Django: migraciones generadas (no subir; mantener solo __init__.py en el repo)
+**/migrations/*.py
+!**/migrations/__init__.py
 
 # Media files (optional - uncomment if you don't want to track media files)
 # media/
