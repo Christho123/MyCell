@@ -17,7 +17,7 @@ urlpatterns = [
     path('api/locations/', include('ubi_geo.urls')),
     path('api/types/', include('app_types.urls')),
     path('api/products/', include('products_configurations.urls')),
-    path('api/company/', include('company_reports.urls')),
+    #path('api/company/', include('company_reports.urls')),
 ]
 
 if settings.DEBUG:

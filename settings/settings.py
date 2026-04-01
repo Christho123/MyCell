@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'ubi_geo.apps.UbiGeoConfig',
     'users_profiles',
     'products_configurations',
-    'company_reports',
+    #'company_reports',
 ]
 
 AUTH_USER_MODEL = 'users_profiles.User'

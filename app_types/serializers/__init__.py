@@ -1,3 +1,1 @@
 from .document_type import DocumentTypeSerializer
-from .payment_type import PaymentTypeSerializer
-from .payment_status import PaymentStatusSerializer

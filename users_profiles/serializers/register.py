@@ -66,5 +66,7 @@ class PublicRegisterSerializer(serializers.ModelSerializer):
         validated_data.pop("password_confirm")
         user = User.objects.create_user(**validated_data)
         user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save()
         return user
